@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Asistente - Portfolio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
+  <div id="ai-widget" aria-live="polite">
+  <h3>Asistente de Diseño</h3>
+  <div id="ai-log" role="log" aria-atomic="false"></div>
+  <input id="ai-input" type="text" placeholder="Escribe tu pregunta..." aria-label="Pregunta">
+  <button id="ai-send">Enviar</button>
+</div>
+
+<style>
+  #ai-widget {
+    max-width: 360px;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: Inter, system-ui, Arial;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(14,20,30,0.04);
+  }
+  #ai-log {
+    min-height:120px;
+    max-height:320px;
+    overflow:auto;
+    padding:8px;
+    border-radius:8px;
+    background:#fafafa;
+    border:1px solid #f0f0f0;
+  }
+  .msg { margin:6px 0; padding:8px; border-radius:8px; line-height:1.3; }
+  .user { background:#e9f5ff; text-align:right; }
+  .bot { background:#fff; border:1px solid #eee; text-align:left; }
+  #ai-input {
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:8px;
+    border:1px solid #ddd;
+    box-sizing:border-box;
+  }
+  #ai-send {
+    margin-top:8px;
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    background:#111827;
+    color:#fff;
+    cursor:pointer;
+  }
+  .typing { font-style:italic; color:#666; }
+</style>
+
+<script>
+const faq = [
+  {"q":"¿Qué tipo de proyectos realizas?","a":"Me especializo en diseño web moderno, interfaces limpias y experiencias digitales claras que combinan estética y funcionalidad."},
+  {"q":"¿En qué herramientas trabajas?","a":"Trabajo con Figma, Photoshop, Illustrator, Webflow y herramientas de prototipado avanzado."},
+  {"q":"¿Cuál es tu estilo principal de diseño?","a":"Minimalista, visualmente equilibrado y centrado en el usuario."},
+  {"q":"¿Podrías adaptar tu estilo a una marca específica?","a":"Sí, siempre ajusto el diseño a la identidad visual y estrategia del cliente."},
+  {"q":"¿Haces diseño responsive?","a":"Sí, todo lo que diseño se adapta automáticamente a móvil, tablet y escritorio."},
+  {"q":"¿Puedes rediseñar una web existente?","a":"Claro. Analizo lo que funciona, lo que no, y creo una nueva versión más clara, moderna y efectiva."},
+  {"q":"¿Cuánto tardas en entregar un proyecto?","a":"Depende del alcance, pero normalmente entre 1 y 4 semanas."},
+  {"q":"¿Podrías diseñar también la parte UX?","a":"Sí, incluyo arquitectura de información, flujos de usuario y wireframes."},
+  {"q":"¿Incluyes branding o logos?","a":"Sí, puedo diseñar o ajustar identidad visual básica si es necesario para el proyecto."},
+  {"q":"¿Trabajas con clientes internacionales?","a":"Sí, trabajo de forma remota con clientes de cualquier país."},
+  {"q":"¿Puedo ver más ejemplos de tu trabajo?","a":"Claro, puedes explorar los proyectos listados en mi portfolio."},
+  {"q":"¿Ofreces mantenimiento web?","a":"Sí, si el proyecto lo requiere."},
+  {"q":"¿Cómo es tu proceso de diseño?","a":"1) Briefing\n\n2) Wireframes\n\n3) Diseño visual\n\n4) Revisión\n\n5) Entrega final"},
+  {"q":"¿Puedes trabajar con una marca desde cero?","a":"Sí, puedo ayudarte desde la identidad visual hasta la web completa."},
+  {"q":"¿Puedes integrar animaciones?","a":"Sí, animaciones suaves y microinteracciones sin afectar rendimiento."},
+  {"q":"¿Cómo cobras?","a":"Presupuesto cerrado por proyecto según alcance."},
+  {"q":"¿Qué te diferencia de otros diseñadores?","a":"Diseños claros, actuales, con enfoque real en UX y detalles."},
+  {"q":"¿Trabajas también con desarrollo?","a":"Sí, puedo entregar la web lista en Webflow."},
+  {"q":"¿Haces SEO básico?","a":"Sí, optimización inicial de títulos, estructura e imágenes. Y actualmente me estoy entrenando en AEO."},
+  {"q":"¿Cómo puedo contactarte?","a":"A través del formulario o por email."},
+  {"q":"¿Aceptas proyectos urgentes?","a":"Sí, si mi agenda lo permite."},
+  {"q":"¿Diseñas apps móviles?","a":"Sí, en mi portfolio uno de mis trabajos fue una App-Web. Pero también me interesan proyectos Android o Híbridos."},
+  {"q":"¿Ofreces auditorías de diseño?","a":"Sí, reviso tu web y entrego mejoras concretas."},
+  {"q":"¿Puedes crear contenido visual también?","a":"Sí, puedo crear gráficos, iconos y piezas complementarias."}
+];
+
+const input = document.getElementById('ai-input');
+const sendBtn = document.getElementById('ai-send');
+const log = document.getElementById('ai-log');
+
+function normalize(s){
+  return s.toLowerCase().replace(/[^\w\sáéíóúüñ]/g,'').trim();
+}
+function bestMatch(query){
+  const qNorm = normalize(query);
+  const qWords = qNorm.split(/\s+/).filter(Boolean);
+  let best = null;
+  let bestScore = 0;
+  faq.forEach(item => {
+    const itemNorm = normalize(item.q + ' ' + (item.a||''));
+    let score = 0;
+    qWords.forEach(w => { if(itemNorm.includes(w)) score++; });
+    if(itemNorm === qNorm) score += 2;
+    if(score > bestScore){ bestScore = score; best = item; }
+  });
+  return (bestScore >= 1) ? best : null;
+}
+
+function appendUser(text){
+  const d = document.createElement('div'); d.className='msg user'; d.innerText = text;
+  log.appendChild(d); log.scrollTop = log.scrollHeight;
+}
+function appendBot(text, typing=false){
+  const d = document.createElement('div'); d.className='msg bot';
+  if(typing){ d.innerHTML = '<span class="typing">'+text+'</span>'; }
+  else { d.innerText = text; }
+  log.appendChild(d); log.scrollTop = log.scrollHeight;
+  return d;
+}
+
+function typeEffect(element, fullText, speed=18){
+  return new Promise(resolve => {
+    let i=0; element.innerHTML = '';
+    const tId = setInterval(()=> {
+      element.innerHTML = fullText.slice(0, ++i).replace(/\n/g,'\n');
+      log.scrollTop = log.scrollHeight;
+      if(i>=fullText.length){ clearInterval(tId); resolve(); }
+    }, speed);
+  });
+}
+
+async function handleAsk(){
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  appendUser(text);
+  const typingNode = appendBot('escribiendo...', true);
+  const match = bestMatch(text);
+  if(match){
+    typingNode.innerHTML = '<span class="typing">...</span>';
+    await new Promise(r=>setTimeout(r,300));
+    await typeEffect(typingNode, match.a);
+  } else {
+    typingNode.innerHTML = '<span class="typing">...</span>';
+    await new Promise(r=>setTimeout(r,400));
+    const fallback = "No tengo una respuesta exacta aún. Si me das más detalles, podré ayudarte mejor.";
+    await typeEffect(typingNode, fallback);
+  }
+}
+
+sendBtn.addEventListener('click', handleAsk);
+input.addEventListener('keydown', (e)=> { if(e.key === 'Enter') handleAsk(); });
+
+appendBot("¡Hola! Pregúntame sobre mis servicios, procesos o proyectos.");
+</script>
+
+</body>
+</html>
