@@ -1,264 +1,236 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Little Jhonny – Your Assistant</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<title>Little Jhonny Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-  /* Floating AI widget */
-  #ai-widget {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    max-width: 360px;
-    border: 1px solid #e6e6e6;
-    border-radius: 10px;
-    padding: 14px;
-    font-family: Inter, system-ui, Arial;
-    background: #fff;
-    box-shadow: 0 6px 18px rgba(14,20,30,0.04);
-    z-index: 2147483647 !important;
-    display:none;
-  }
-  #ai-header { display:flex; justify-content:space-between; align-items:center; }
-  #ai-header h3 { margin:0; font-size:16px; color:#111827; }
-  #ai-close { cursor:pointer; font-size:18px; color:#0B3D91; background:none; border:none; }
-  #ai-log {
-    min-height:120px;
-    max-height:320px;
-    overflow:auto;
-    padding:8px;
-    border-radius:8px;
-    background:#fafafa;
-    border:1px solid #f0f0f0;
-    margin-top:8px;
-  }
-  .msg { margin:6px 0; padding:8px; border-radius:8px; line-height:1.3; }
-  .user { background:#e9f5ff; text-align:right; color:#111827; }
-  .bot { background:#fff; border:1px solid #eee; text-align:left; color:#111827; }
-  #ai-input { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; color:#111827; }
-  #ai-send { margin-top:8px; width:100%; padding:10px; border-radius:8px; border:none; background:#0B3D91; color:#fff; cursor:pointer; }
+#assistant-container{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  z-index:9999999;
+  font-family:Inter,system-ui,Arial;
+}
 
-  /* Minimized circle */
-  #ai-minimized {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background:white;
-    border:2px solid #0B3D91;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    cursor:pointer;
-    font-weight:bold;
-    color:#0B3D91;
-    font-family: Inter, system-ui, Arial;
-    box-shadow: 0 6px 18px rgba(14,20,30,0.1);
-    padding:14px;
-    text-align:center;
-    font-size:14px;
-    z-index:2147483647 !important;
-    transform: translateY(0);
-  }
+#assistant-button{
+  width:96px;
+  height:96px;
+  background:#fff;
+  border-radius:50%;
+  border:2px solid #0f3d3e;
+  color:#0f3d3e;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:14px;
+  cursor:pointer;
+}
 
-  /* Shake animation */
-  @keyframes shake {
-    0% { transform: translate(1px,1px) rotate(0deg); }
-    10% { transform: translate(-1px,-2px) rotate(-1deg); }
-    20% { transform: translate(-3px,0px) rotate(1deg); }
-    30% { transform: translate(3px,2px) rotate(0deg); }
-    40% { transform: translate(1px,-1px) rotate(1deg); }
-    50% { transform: translate(-1px,2px) rotate(-1deg); }
-    60% { transform: translate(-3px,1px) rotate(0deg); }
-    70% { transform: translate(3px,1px) rotate(-1deg); }
-    80% { transform: translate(-1px,-1px) rotate(1deg); }
-    90% { transform: translate(1px,2px) rotate(0deg); }
-    100% { transform: translate(1px,-2px) rotate(-1deg); }
-  }
+#assistant{
+  width:360px;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #ddd;
+  box-shadow:0 12px 40px rgba(0,0,0,.15);
+  padding:14px;
+  display:none;
+}
 
-  /* Jump animation */
-  @keyframes jump {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-12px); }
-  }
+#header{
+  display:flex;
+  justify-content:space-between;
+  font-weight:600;
+  color:#0f3d3e;
+}
+
+#close{cursor:pointer}
+
+#log{
+  margin:10px 0;
+  background:#fafafa;
+  border:1px solid #eee;
+  border-radius:10px;
+  padding:8px;
+  height:220px;
+  overflow:auto;
+}
+
+.msg{
+  padding:8px;
+  margin:6px 0;
+  border-radius:8px;
+  font-size:14px;
+}
+
+.user{background:#e6f2ff;text-align:right}
+.bot{background:#fff;border:1px solid #eee}
+
+#input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  color:#111;
+}
+
+#send{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#0f3d3e;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* Animations */
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(2px,0)}
+  50%{transform:translate(-2px,0)}
+  75%{transform:translate(2px,0)}
+  100%{transform:translate(0,0)}
+}
+@keyframes bounce{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-12px)}
+  100%{transform:translateY(0)}
+}
+.shake{animation:shake .4s infinite}
+.shake-bounce{animation:shake .4s infinite, bounce .8s infinite}
 </style>
 </head>
+
 <body>
 
-<div id="ai-widget">
-  <div id="ai-header">
-    <h3>Little Jhonny – Your Assistant</h3>
-    <button id="ai-close">×</button>
+<div id="assistant-container">
+  <div id="assistant-button">Jhonny</div>
+
+  <div id="assistant">
+    <div id="header">
+      <span>Little Jhonny – Virtual Assistant</span>
+      <span id="close">✕</span>
+    </div>
+
+    <div id="log"></div>
+
+    <input id="input" placeholder="Ask a question">
+    <button id="send">Send</button>
   </div>
-  <div id="ai-log" role="log" aria-atomic="false"></div>
-  <input id="ai-input" type="text" placeholder="Ask a question..." aria-label="Question">
-  <button id="ai-send">Send</button>
 </div>
 
-<div id="ai-minimized">Jhonny</div>
-
 <script>
-// 60 FAQs (4-5 keywords per question, last 57-60 = 1)
-const faqs = [
-  {q:"projects kind work type", a:"I specialize in modern web design, clean interfaces and clear digital experiences."},
-  {q:"tools use work software", a:"I use Figma, Photoshop, Illustrator, Webflow and advanced prototyping tools."},
-  {q:"main style design minimal", a:"Minimalist, visually balanced, and user-focused."},
-  {q:"adapt style brand specific", a:"Yes, I always adjust designs to client visual identity and strategy."},
-  {q:"responsive design create adapt", a:"Yes, everything I design adapts automatically to mobile, tablet, and desktop."},
-  {q:"redesign existing website improve", a:"Sure, I analyze what works and create a modern, clear, and effective new version."},
-  {q:"project deliver time duration", a:"Depends on scope, normally between 1–4 weeks."},
-  {q:"UX design user experience", a:"Yes, I include information architecture, user flows, and wireframes."},
-  {q:"branding logos include visual", a:"Yes, I can create or adjust basic visual identity if needed."},
-  {q:"clients international work remote", a:"Yes, I work remotely with clients from any country."},
-  {q:"examples previous work portfolio", a:"Of course, check my portfolio projects."},
-  {q:"website maintenance offer support", a:"Yes, if the project requires."},
-  {q:"design process steps workflow", a:"1) Briefing\n2) Wireframes\n3) Visual Design\n4) Review\n5) Final Delivery"},
-  {q:"knowledge HTML CSS JavaScript", a:"Minimal, basic. I mostly use AI tools."},
-  {q:"functional interactive prototypes implement", a:"Yes, I have implemented functional interactive prototypes."},
-  {q:"frameworks React Angular Vue", a:"No, I work mainly in Figma."},
-  {q:"collaborate developers implement designs", a:"Yes, I work closely with developers."},
-  {q:"CMS experience platforms WordPress", a:"Only Webflow."},
-  {q:"optimize design performance speed", a:"Yes, I optimize design for speed and performance."},
-  {q:"define information architecture project", a:"I research and structure content logically for users."},
-  {q:"usability tests real users", a:"Yes, with real users."},
-  {q:"measure metrics KPIs UX", a:"I track user feedback and engagement metrics."},
-  {q:"accessibility WCAG design follow", a:"I try to follow accessibility best practices."},
-  {q:"decide multiple solutions flow", a:"I choose the most efficient solution."},
-  {q:"visual coherence maintain consistency", a:"I maintain consistent style and alignment."},
-  {q:"iconography illustrations custom design", a:"Yes, basic custom icons and illustrations."},
-  {q:"adapt design languages cultures", a:"Yes, I can adapt designs to different languages and cultures."},
-  {q:"typography colors importance UX", a:"Very important for user experience."},
-  {q:"multidisciplinary teams work collaboration", a:"Yes, I’ve worked with architects, marketers, developers."},
-  {q:"manage client feedback revisions", a:"Weekly meetings, step-by-step review."},
-  {q:"tools documentation style guides", a:"I don’t use formal style guides yet."},
-  {q:"prioritize tasks deadlines timeline", a:"Organize timelines and avoid overload."},
-  {q:"balance aesthetics business objectives", a:"Functionality first, then aesthetics, finding a fair balance."},
-  {q:"ecommerce mobile apps projects", a:"No, but I designed a hybrid app with a friend."},
-  {q:"prototypes conversion funnel flow", a:"I design flows guiding users to objectives."},
-  {q:"research competitors trends analysis", a:"I research competitors via direct contacts and market observation."},
-  {q:"stay updated UX UI", a:"I follow experts on LinkedIn and publications."},
-  {q:"experiment technologies AR AI voice", a:"Yes, AR, AI, voice UI."},
-  {q:"challenging project learn experience", a:"Every project teaches me something new."},
-  {q:"programs known familiar software", a:"Figma, Photoshop, Illustrator."},
-  {q:"programs use design tools", a:"Figma, Photoshop, Illustrator."},
-  {q:"prototyping tools software methods", a:"Figma and advanced prototyping tools."},
-  {q:"mobile apps design develop", a:"Yes, hybrid apps mostly."},
-  {q:"brand identity design create", a:"Yes, full brand identity if required."},
-  {q:"accessible interfaces design follow", a:"I follow accessibility rules."},
-  {q:"team work collaboration environment", a:"Mostly collaborative, not solo."},
-  {q:"agile Scrum methodology workflow", a:"Yes, I can work Agile/Scrum."},
-  {q:"document design decisions process", a:"I document key design decisions."},
-  {q:"microinteractions animations design include", a:"I include smooth microinteractions."},
-  {q:"adapt resolutions devices screens", a:"I adapt designs to all devices."},
-  {q:"animations motion graphics create", a:"I create subtle animations and motion graphics."},
-  {q:"user research design testing", a:"I perform user research before designing."},
-  {q:"contradictory feedback handle manage", a:"I manage conflicting feedback carefully."},
-  {q:"differentiate other designers uniqueness", a:"Clear, current designs focusing on UX."},
-  {q:"consulting audits design services", a:"Yes, I provide design audits and consultancy."},
-  {q:"urgent projects deadlines manage", a:"I manage urgent projects efficiently."},
-  {q:"name identity personal info", a:"Juan Lucero"},
-  {q:"age years old birth", a:"36 years old"},
-  {q:"nationality country origin citizenship", a:"Italo-Argentinian"},
-  {q:"living Munich time duration", a:"Living in Munich since 2021"}
+/* ================== FAQ (60 QUESTIONS) ================== */
+const faq = [
+  {k:["projects","design","work","type","do"],a:"I specialize in modern web design, clean interfaces, and clear digital experiences."},
+  {k:["tools","software","programs","use","design"],a:"I work with Figma, Photoshop, Illustrator, Webflow and advanced prototyping tools."},
+  {k:["style","design","main","approach"],a:"My style is minimalist, balanced and user-focused."},
+  {k:["adapt","adjust","brand","style","identity"],a:"Yes, I adapt my design style to each brand’s identity and strategy."},
+  {k:["responsive","mobile","tablet","devices"],a:"Yes, all my designs adapt to mobile, tablet and desktop."},
+  {k:["redesign","existing","website","improve"],a:"Yes, I analyze what works and redesign it to be clearer and more effective."},
+  {k:["delivery","time","project","weeks"],a:"Depending on scope, usually between 1 and 4 weeks."},
+  {k:["ux","wireframes","flows","architecture"],a:"Yes, I include information architecture, user flows and wireframes."},
+  {k:["branding","logos","identity","visual","design"],a:"Yes, I can design or refine basic branding and logos."},
+  {k:["international","clients","remote","work"],a:"Yes, I work remotely with clients worldwide."},
+  {k:["portfolio","examples","work","projects"],a:"You can see selected projects directly in my portfolio."},
+  {k:["maintenance","website","support"],a:"Yes, if the project requires ongoing maintenance."},
+  {k:["process","design","workflow","steps"],a:"My process includes briefing, wireframes, visual design, review and final delivery."},
+  {k:["start","brand","scratch","zero"],a:"Yes, I can build a brand and website from scratch."},
+  {k:["animations","microinteractions","motion","design"],a:"Yes, I implement subtle animations without hurting performance."},
+  {k:["pricing","budget","cost","charge"],a:"I work with fixed project-based pricing."},
+  {k:["difference","designer","unique","why"],a:"I focus on clarity, UX and strong visual detail."},
+  {k:["development","webflow","build","code"],a:"Yes, I can deliver fully built Webflow websites."},
+  {k:["seo","optimization","search","performance"],a:"I apply basic SEO and structure optimization."},
+  {k:["contact","email","reach","hire"],a:"You can contact me via the form or email."},
+  {k:["urgent","rush","fast","project"],a:"Yes, if my schedule allows it."},
+  {k:["mobile","apps","application","design"],a:"Yes, I have designed hybrid app experiences."},
+  {k:["audit","review","design","analysis"],a:"Yes, I offer design audits with actionable improvements."},
+  {k:["visual","content","graphics","icons"],a:"Yes, I create visual assets and supporting graphics."},
+
+  /* Technical / UX */
+  {k:["html","css","javascript","coding","programming"],a:"I have basic knowledge and rely heavily on AI-assisted workflows."},
+  {k:["interactive","prototypes","functional","testing"],a:"Yes, I build interactive functional prototypes."},
+  {k:["frameworks","react","angular","vue"],a:"No, I mainly work with Figma and Webflow."},
+  {k:["developers","collaboration","handoff","team"],a:"Yes, I collaborate closely with developers."},
+  {k:["cms","wordpress","shopify","webflow"],a:"I mainly work with Webflow."},
+  {k:["performance","speed","optimization","load"],a:"Yes, I optimize layouts for performance."},
+  {k:["information","architecture","structure","ux"],a:"I organize content logically based on user goals."},
+  {k:["usability","testing","users","feedback"],a:"Yes, I run usability tests with real users."},
+  {k:["metrics","kpis","measure","ux"],a:"I measure usability, clarity and task completion."},
+  {k:["accessibility","wcag","inclusive","design"],a:"I follow accessibility best practices."},
+  {k:["decision","solutions","design","choice"],a:"I choose the most efficient solution for users."},
+
+  /* Collaboration / Strategy */
+  {k:["teams","multidisciplinary","collaboration","experience"],a:"Yes, I have worked in multidisciplinary teams."},
+  {k:["feedback","clients","reviews","process"],a:"I manage feedback through staged reviews."},
+  {k:["documentation","guidelines","design","system"],a:"I document decisions and visual rules."},
+  {k:["prioritization","deadlines","time","management"],a:"I prioritize tasks and manage workload carefully."},
+  {k:["business","goals","strategy","balance"],a:"Business goals always come first, then refinement."},
+  {k:["ecommerce","applications","commerce","apps"],a:"I have designed hybrid app experiences."},
+  {k:["funnel","conversion","users","flow"],a:"I design flows that guide users toward goals."},
+  {k:["research","competition","trends","analysis"],a:"I research competitors directly and observe trends."},
+  {k:["learning","trends","ux","technology"],a:"I stay updated through professionals and industry content."},
+  {k:["ai","ar","voice","technology"],a:"Yes, I experiment heavily with AI and emerging tech."},
+
+  /* Personal (single keyword match) */
+  {k:["name"],a:"My name is Juan Lucero."},
+  {k:["age"],a:"I am 36 years old."},
+  {k:["nationality"],a:"I am Italo-Argentinian."},
+  {k:["munich"],a:"I have been living in Munich since 2021."}
 ];
 
-const input = document.getElementById('ai-input');
-const sendBtn = document.getElementById('ai-send');
-const log = document.getElementById('ai-log');
-const widget = document.getElementById('ai-widget');
-const minimized = document.getElementById('ai-minimized');
-const closeBtn = document.getElementById('ai-close');
+/* ================== ENGINE ================== */
+const log=document.getElementById("log");
+const input=document.getElementById("input");
 
-function normalize(s){ return s.toLowerCase().replace(/[^\w\s]/g,'').trim(); }
-
-function bestMatch(query){
-  const qNorm = normalize(query);
-  const qWords = qNorm.split(/\s+/).filter(Boolean);
-  let best = null;
-  let bestScore = 0;
-  faqs.forEach(item => {
-    const itemWords = item.q.split(/\s+/);
-    let count = 0;
-    itemWords.forEach(w => { if(qWords.includes(w)) count++; });
-    const minScore = faqs.indexOf(item) >= 56 ? 1 : 2; // last 57-60 = 1 word
-    if(count >= minScore && count > bestScore){ bestScore = count; best = item; }
-  });
-  return best;
+function add(text,cls){
+  const d=document.createElement("div");
+  d.className="msg "+cls;
+  d.innerText=text;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
 }
 
-function appendUser(text){
-  const d = document.createElement('div'); d.className='msg user'; d.innerText = text;
-  log.appendChild(d); log.scrollTop = log.scrollHeight;
-}
-
-function appendBot(text, typing=false){
-  const d = document.createElement('div'); d.className='msg bot';
-  if(typing){ d.innerHTML = '<span class="typing">'+text+'</span>'; }
-  else { d.innerText = text; }
-  log.appendChild(d); log.scrollTop = log.scrollHeight;
-  return d;
-}
-
-function typeEffect(element, fullText, speed=18){
-  return new Promise(resolve => {
-    let i=0; element.innerHTML='';
-    const tId=setInterval(()=> {
-      element.innerHTML = fullText.slice(0,++i).replace(/\n/g,'\n');
-      log.scrollTop = log.scrollHeight;
-      if(i>=fullText.length){ clearInterval(tId); resolve(); }
-    }, speed);
-  });
-}
-
-async function handleAsk(){
-  const text = input.value.trim();
-  if(!text) return;
-  input.value='';
-  appendUser(text);
-  const typingNode = appendBot('typing...', true);
-  const match = bestMatch(text);
-  if(match){
-    typingNode.innerHTML = '<span class="typing">...</span>';
-    await new Promise(r=>setTimeout(r,300));
-    await typeEffect(typingNode, match.a);
-  } else {
-    typingNode.innerHTML = '<span class="typing">...</span>';
-    await new Promise(r=>setTimeout(r,400));
-    const fallback = "I don't have an exact answer yet. Please provide more details.";
-    await typeEffect(typingNode, fallback);
+function reply(q){
+  const w=q.toLowerCase().split(/\W+/);
+  for(const f of faq){
+    let c=0;
+    f.k.forEach(k=>{if(w.includes(k))c++;});
+    if(c>=2 || (f.k.length===1 && c===1)) return f.a;
   }
+  return "Please rephrase your question.";
 }
 
-sendBtn.addEventListener('click', handleAsk);
-input.addEventListener('keydown', (e)=> { if(e.key === 'Enter') handleAsk(); });
+document.getElementById("send").onclick=()=>{
+  if(!input.value.trim())return;
+  add(input.value,"user");
+  add(reply(input.value),"bot");
+  input.value="";
+};
 
-// Minimize / restore logic
-closeBtn.addEventListener('click', ()=>{
-  widget.style.display='none';
-  minimized.style.display='flex';
-});
-minimized.addEventListener('click', ()=>{
-  minimized.style.display='none';
-  widget.style.display='block';
-});
+/* UI */
+const btn=document.getElementById("assistant-button");
+const panel=document.getElementById("assistant");
+const close=document.getElementById("close");
 
-// Animated startup
-window.addEventListener('load', ()=>{
-  minimized.style.display='flex';
+btn.onclick=()=>{btn.style.display="none";panel.style.display="block";}
+close.onclick=()=>{panel.style.display="none";btn.style.display="flex";}
 
-  setTimeout(()=>{ minimized.style.animation = 'shake 0.5s linear infinite'; }, 2000);
-  setTimeout(()=>{ minimized.style.animation = 'shake 0.5s linear infinite, jump 0.5s ease-in-out 3'; }, 4500);
-  setTimeout(()=> {
-    minimized.style.display='none';
-    widget.style.display='block';
-    minimized.style.animation = 'none';
-  }, 6000);
-});
-
-appendBot("Hello! Ask me about my services, processes, or projects.");
+/* Intro animation */
+setTimeout(()=>btn.classList.add("shake"),2000);
+setTimeout(()=>{
+  btn.classList.remove("shake");
+  btn.classList.add("shake-bounce");
+},4500);
+setTimeout(()=>{
+  btn.classList.remove("shake-bounce");
+  btn.click();
+},6000);
 </script>
 
 </body>
